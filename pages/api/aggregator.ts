@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-
+import { withSentry } from "@sentry/nextjs";
 import { resolve } from "path";
 import axios from "axios";
 import { orderBy, uniq, slice, defaultsDeep } from "lodash";
@@ -202,7 +202,7 @@ const handleAggregatorPost = async (req: NextApiRequest) => {
   };
 };
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+const handleRequest = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
     const aggregatorPostResponse = await handleAggregatorPost(req);
     res.status(200).json(aggregatorPostResponse);
@@ -212,3 +212,5 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   res.status(501).end("Not implemented");
   return;
 };
+
+export default withSentry(handleRequest);
