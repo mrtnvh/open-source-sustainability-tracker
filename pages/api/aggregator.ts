@@ -82,7 +82,7 @@ const getDependencyInformation = async ({ name, ...dep }: any) => {
       dependencies: indirectDependencies,
     };
   } catch (error) {
-    console.warn("getDependencyInformation", name, error);
+    // console.warn("getDependencyInformation", name, error);
     return { name, ...dep };
   }
 };
