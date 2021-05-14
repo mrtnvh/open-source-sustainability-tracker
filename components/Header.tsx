@@ -1,12 +1,12 @@
-import { FormControl, FormLabel, Button, Input } from "@chakra-ui/react";
 import { Flex, Text, useColorModeValue } from "@chakra-ui/react";
 import { useContext } from "react";
 import { UsernameContext } from "../lib/context/Username.context";
 import { AggregatorContext } from "../lib/context/Aggregator.context";
+import AggregationForm from "../components/AggregationForm";
 
 export default function Header() {
   const { username, setUsername } = useContext(UsernameContext);
-  const { setAggregator } = useContext(AggregatorContext);
+  const { aggregator, setAggregator } = useContext(AggregatorContext);
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAggregator(username);
@@ -30,27 +30,7 @@ export default function Header() {
       >
         Open Source Sustainability Tracker
       </Text>
-
-      <form onSubmit={(e) => handleSubmit(e)}>
-        <FormControl
-          display="flex"
-          alignItems="center"
-          id="ghUsername"
-          gridGap="3"
-          w="auto"
-        >
-          <FormLabel whiteSpace="nowrap" margin="0">
-            Your GitHub username
-          </FormLabel>
-          <Input
-            type="text"
-            maxW="300"
-            onChange={(e) => setUsername(e.target.value)}
-            value={username}
-          />
-          <Button type="submit" colorScheme="blue">Go</Button>
-        </FormControl>
-      </form>
+      {!!aggregator && <AggregationForm inHeader={true} />}
     </Flex>
   );
 }

@@ -8,7 +8,7 @@ function MyApp({ Component, pageProps }) {
     <AppContextProvider>
         <Flex direction="column" minH="100vh" w="100%">
           <Header />
-          <chakra.main flexGrow={1} p={{ base: 6 }}>
+          <chakra.main display="flex" flexDirection="column" flexGrow={1} p={{ base: 6 }}>
             <Component {...pageProps} />
           </chakra.main>
           <Footer />

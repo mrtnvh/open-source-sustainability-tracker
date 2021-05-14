@@ -1,9 +1,12 @@
 import { useContext } from "react";
 import Head from "next/head";
-import { UsernameContext } from "../lib/context/Username.context";
+import AggregationForm from "../components/AggregationForm";
+import { AggregatorContext } from "../lib/context/Aggregator.context";
+import { Box, useColorModeValue, Flex } from "@chakra-ui/react";
 
 export default function Home() {
-  const { username, setUsername } = useContext(UsernameContext);
+  const { aggregator } = useContext(AggregatorContext);
+
   return (
     <>
       <Head>
@@ -11,8 +14,22 @@ export default function Home() {
         <meta name="description" content="Open Source Sustainability Tracker" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <div>{username}</div>
+      {!!aggregator ? (
+        <div>aggregated</div>
+      ) : (
+        <Flex alignItems="center" justifyContent="center" flexGrow={1}>
+          <Box
+            maxW="sm"
+            borderWidth="1px"
+            borderRadius="lg"
+            bg={useColorModeValue("gray.100", "gray.900")}
+            color={useColorModeValue("gray.700", "gray.200")}
+            p="6"
+          >
+            <AggregationForm />
+          </Box>
+        </Flex>
+      )}
     </>
   );
 }
