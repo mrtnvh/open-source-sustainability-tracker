@@ -6,8 +6,8 @@ import { orderBy, uniq, slice, defaultsDeep } from "lodash";
 import pacote from "pacote";
 import pMap from "p-map";
 
-const MAX_CONCURRENCY = 25;
-const SLICE_AMOUNT = 50;
+const MAX_CONCURRENCY = process.env.NEXT_AGGREGATOR_MAX_CONCURRENCY;
+const SLICE_AMOUNT = process.env.NEXT_AGGREGATOR_SLICE_AMOUNT;
 const P_MAP_OPTIONS = {
   concurrency: MAX_CONCURRENCY,
 };
