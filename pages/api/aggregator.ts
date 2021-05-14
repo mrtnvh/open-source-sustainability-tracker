@@ -5,14 +5,12 @@ import axios from "axios";
 import { orderBy, uniq, slice, defaultsDeep } from "lodash";
 import pacote from "pacote";
 import pMap from "p-map";
-// import pReduce from 'p-reduce'
 
 const MAX_CONCURRENCY = 25;
 const SLICE_AMOUNT = 50;
 const P_MAP_OPTIONS = {
   concurrency: MAX_CONCURRENCY,
 };
-const CACHE_PATH = resolve(__dirname, "../.cache/dependencies");
 const apiBaseUrl = "https://api.github.com";
 
 const getPackageFilesFromUsername = async (username: string) => {
@@ -62,7 +60,7 @@ const getDependencyInformation = async ({ name, ...dep }: any) => {
 
     const { dependencies, devDependencies, funding } = await pacote.manifest(
       name,
-      { fullMetadata: true, cache: CACHE_PATH }
+      { fullMetadata: true, preferOnline: true }
     );
     const indirectDependencies = Object.keys({
       ...dependencies,
