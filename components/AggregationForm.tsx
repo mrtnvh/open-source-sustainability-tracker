@@ -1,4 +1,10 @@
-import { FormControl, FormLabel, Input, Button, useColorModeValue } from "@chakra-ui/react";
+import {
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import React, { useContext } from "react";
 import { AggregatorContext } from "../lib/context/Aggregator.context";
 import { UsernameContext } from "../lib/context/Username.context";
@@ -9,10 +15,23 @@ interface InitialFormProps {
 
 export default function AggregationForm({ inHeader }: InitialFormProps) {
   const { username, setUsername } = useContext(UsernameContext);
-  const { setAggregator } = useContext(AggregatorContext);
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const { setAggregator, aggregatorState, setAggregatorState, setAggregated } =
+    useContext(AggregatorContext);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAggregator(username);
+    setAggregatorState("pending");
+    fetch("/api/aggregator", {
+      method: "POST",
+      body: JSON.stringify({
+        username,
+      }),
+    })
+      .then((response) => response.json())
+      .then(setAggregated)
+      .finally(() => {
+        setAggregatorState("idle");
+      });
   };
 
   const formControlProps = {
@@ -37,7 +56,7 @@ export default function AggregationForm({ inHeader }: InitialFormProps) {
         }
       : {
           mb: "4",
-          bg: useColorModeValue("white", "black")
+          bg: useColorModeValue("white", "black"),
         }),
   };
 
