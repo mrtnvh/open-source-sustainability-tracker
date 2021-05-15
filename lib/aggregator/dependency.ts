@@ -58,11 +58,9 @@ const cleanup = (deps) =>
 const defaultGetDependencyInformationOptions = {
   maxDepth: 0,
   depth: 0,
-  totalCount: 0,
 };
 
 const recursor = async (
-  //PProgress.fn(
   parents: any,
   options: Partial<typeof defaultGetDependencyInformationOptions>
   // progress: PProgress.ProgressNotifier
@@ -79,11 +77,7 @@ const recursor = async (
     async ({ dependencies, ...child }, index) => {
       // const totalCount = slicedChildrenToQuery.length;
       const existingIndex = parentsWithoutDependencies.findIndex((item) => item.name === child.name);
-      if (existingIndex !== -1) {
-        // progress(index / totalCount);
-        return child;
-      }
-      const newChild = await getDependencyInformation(child);
+      const newChild = existingIndex !== -1 ? child : await getDependencyInformation(child);
       // progress(index / totalCount);
       return newChild;
     },
@@ -100,10 +94,12 @@ const recursor = async (
   );
 
   if (maxDepth > depth) {
-    return await recursor(queriedFamilies, {
+    const handleRecursion = await recursor(queriedFamilies, {
       maxDepth,
       depth: depth + 1,
     });
+    // handleRecursion.onProgress(progress);
+    return handleRecursion;
   } else {
     return cleanup(queriedFamilies);
   }
@@ -119,7 +115,7 @@ export const getDirectDependenciesFromPackages = PProgress.fn(
         pMap(
           deps,
           async (dep, index) => {
-            const info = getDependencyInformation(dep);
+            const info = await getDependencyInformation(dep);
             progress(index / deps.length);
             return info;
           },

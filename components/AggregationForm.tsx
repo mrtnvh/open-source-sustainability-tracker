@@ -102,17 +102,17 @@ export default function AggregationForm({ inHeader }: InitialFormProps) {
           <Tr>
             <Td>Projects</Td>
             <Td>{projectsCount}</Td>
-            <Td>{packagesProgressState * 100}%</Td>
+            <Td>{Math.ceil(packagesProgressState * 100)}%</Td>
           </Tr>
           <Tr>
             <Td>Direct dependencies</Td>
             <Td>{directDependenciesCount}</Td>
-            <Td>{directDependenciesProgressState * 100}%</Td>
+            <Td>{Math.ceil(directDependenciesProgressState * 100)}%</Td>
           </Tr>
           <Tr>
             <Td>Indirect dependencies</Td>
             <Td>{indirectDependenciesCount}</Td>
-            <Td>{indirectDependenciesProgressState * 100}%</Td>
+            <Td>{Math.ceil(indirectDependenciesProgressState * 100)}%</Td>
           </Tr>
         </Tbody>
       </Table>
