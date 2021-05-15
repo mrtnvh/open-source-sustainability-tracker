@@ -2,7 +2,7 @@ import { defaultsDeep, orderBy, slice } from "lodash";
 import pMap from "p-map";
 import PProgress from "p-progress";
 import { ManifestResult } from "pacote";
-import { P_MAP_OPTIONS, SLICE_AMOUNT } from "./constants";
+import { P_MAP_OPTIONS, SLICE_AMOUNT } from "../constants";
 
 const getDependencyInformation = async ({ name, ...dep }: any) => {
   try {

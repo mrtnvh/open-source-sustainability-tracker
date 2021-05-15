@@ -1,11 +1,9 @@
 import { FormControl, FormLabel, Input, Button, useColorModeValue, Text, Td, Table, Tbody, Tr } from "@chakra-ui/react";
-import { slice } from "lodash";
+import { slice, unionBy } from "lodash";
 import React, { useContext, useState } from "react";
-import {
-  fetchPackageFilesFromUsername,
-  getDirectDependenciesFromPackages,
-  getIndirectDependenciesFromDirectDependencies,
-} from "../lib/aggregator";
+import { fetchProjectsFromUsername } from "../lib/aggregator";
+import { getIndirectDependenciesFromPackageLock } from "../lib/aggregator/depedency/lockfile";
+import { getDirectDependenciesFromPackages } from "../lib/aggregator/depedency/package";
 import { AggregatorContext } from "../lib/context/Aggregator.context";
 import { UsernameContext } from "../lib/context/Username.context";
 
@@ -29,26 +27,35 @@ export default function AggregationForm({ inHeader }: InitialFormProps) {
     // setAggregator(username);
     setAggregatorState("pending");
 
-    const handleFetchPackageFilesFromUsername = fetchPackageFilesFromUsername(username);
-    handleFetchPackageFilesFromUsername.onProgress(setPackagesProgressState);
-    const packages = await handleFetchPackageFilesFromUsername;
+    const handleFetchPackageLockFilesFromUsername = fetchProjectsFromUsername(username);
+    handleFetchPackageLockFilesFromUsername.onProgress(setPackagesProgressState);
+    const packages = await handleFetchPackageLockFilesFromUsername;
     setProjectsCount(packages.length);
 
-    const handleGetDirectDependenciesFromPackages = getDirectDependenciesFromPackages(packages);
+    const handleGetDirectDependenciesFromPackages = getDirectDependenciesFromPackages(
+      packages.map(({ pkgFile }) => pkgFile)
+    );
     handleGetDirectDependenciesFromPackages.onProgress(setDirectDependenciesProgressState);
     const directDependenciesFromPackages = await handleGetDirectDependenciesFromPackages;
     setDirectDependenciesCount(directDependenciesFromPackages.length);
 
-    const handleGetIndirectDependenciesFromDirectDependencies =
-      getIndirectDependenciesFromDirectDependencies(directDependenciesFromPackages);
-    handleGetIndirectDependenciesFromDirectDependencies.onProgress(setIndirectDependenciesProgressState);
-    const dependencies = await handleGetIndirectDependenciesFromDirectDependencies;
-    setIndirectDependenciesCount(dependencies.filter(({ indirectCount }) => !!indirectCount).length);
+    const handleGetIndirectDependenciesFromPackageLock = getIndirectDependenciesFromPackageLock(
+      packages.map(({ lockFile }) => lockFile)
+    );
+    handleGetIndirectDependenciesFromPackageLock.onProgress(setIndirectDependenciesProgressState);
+    const inDirectDependencies = await handleGetIndirectDependenciesFromPackageLock;
+    setIndirectDependenciesCount(inDirectDependencies.length);
+
+    const dependencies = unionBy(
+      directDependenciesFromPackages.map(({ dependencies, ...dep }) => dep),
+      inDirectDependencies,
+      "name"
+    );
 
     // setAggregator(username);
     setAggregated({
       projectsCount,
-      dependencies: dependencies,
+      dependencies,
     });
     setAggregatorState("idle");
   };
