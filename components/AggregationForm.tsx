@@ -6,6 +6,7 @@ import { getIndirectDependenciesFromPackageLock } from "../lib/aggregator/depede
 import { getDirectDependenciesFromPackages } from "../lib/aggregator/depedency/package";
 import { AggregatorContext } from "../lib/context/Aggregator.context";
 import { UsernameContext } from "../lib/context/Username.context";
+import { set, get } from "idb-keyval";
 
 interface InitialFormProps {
   inHeader?: boolean;
@@ -27,39 +28,48 @@ export default function AggregationForm({ inHeader }: InitialFormProps) {
     // setAggregator(username);
     setAggregatorState("pending");
 
-    const handleFetchPackageLockFilesFromUsername = fetchProjectsFromUsername(username);
-    handleFetchPackageLockFilesFromUsername.onProgress(setPackagesProgressState);
-    const packages = await handleFetchPackageLockFilesFromUsername;
-    setProjectsCount(packages.length);
+    const existingAggregated = await get(username);
 
-    const handleGetDirectDependenciesFromPackages = getDirectDependenciesFromPackages(
-      packages.map(({ pkgFile }) => pkgFile)
-    );
-    handleGetDirectDependenciesFromPackages.onProgress(setDirectDependenciesProgressState);
-    const directDependenciesFromPackages = await handleGetDirectDependenciesFromPackages;
-    setDirectDependenciesCount(directDependenciesFromPackages.length);
+    if (existingAggregated) {
+      setAggregated(existingAggregated);
+    } else {
+      const handleFetchPackageLockFilesFromUsername = fetchProjectsFromUsername(username);
+      handleFetchPackageLockFilesFromUsername.onProgress(setPackagesProgressState);
+      const packages = await handleFetchPackageLockFilesFromUsername;
+      setProjectsCount(packages.length);
 
-    const handleGetIndirectDependenciesFromPackageLock = getIndirectDependenciesFromPackageLock(
-      packages.map(({ lockFile }) => lockFile)
-    );
-    handleGetIndirectDependenciesFromPackageLock.onProgress(setIndirectDependenciesProgressState);
-    const inDirectDependencies = await handleGetIndirectDependenciesFromPackageLock;
-    setIndirectDependenciesCount(inDirectDependencies.length);
+      const handleGetDirectDependenciesFromPackages = getDirectDependenciesFromPackages(
+        packages.map(({ pkgFile }) => pkgFile)
+      );
+      handleGetDirectDependenciesFromPackages.onProgress(setDirectDependenciesProgressState);
+      const directDependenciesFromPackages = await handleGetDirectDependenciesFromPackages;
+      setDirectDependenciesCount(directDependenciesFromPackages.length);
 
-    const dependencies = orderBy(
-      unionBy(
-        directDependenciesFromPackages.map(({ dependencies, ...dep }) => dep),
-        inDirectDependencies,
-        "name"
-      ).filter((dep) => dep !== null),
-      ["directCount", "indirectCount"],
-      ["desc", "desc"]
-    );
+      const handleGetIndirectDependenciesFromPackageLock = getIndirectDependenciesFromPackageLock(
+        packages.map(({ lockFile }) => lockFile)
+      );
+      handleGetIndirectDependenciesFromPackageLock.onProgress(setIndirectDependenciesProgressState);
+      const inDirectDependencies = await handleGetIndirectDependenciesFromPackageLock;
+      setIndirectDependenciesCount(inDirectDependencies.length);
 
-    setAggregated({
-      projectsCount,
-      dependencies,
-    });
+      const dependencies = orderBy(
+        unionBy(
+          directDependenciesFromPackages.map(({ dependencies, ...dep }) => dep),
+          inDirectDependencies,
+          "name"
+        ).filter((dep) => dep !== null),
+        ["directCount", "indirectCount"],
+        ["desc", "desc"]
+      );
+
+      const aggregated = {
+        projectsCount,
+        dependencies,
+      };
+
+      setAggregated(aggregated);
+      await set(username, aggregated);
+    }
     setAggregatorState("idle");
   };
 
