@@ -1,12 +1,12 @@
 import { useContext } from "react";
 import { AggregatorContext } from "../lib/context/Aggregator.context";
-import { Table, Tbody, Tr, Td, Thead, Th, Link } from "@chakra-ui/react";
+import { Table, Tbody, Tr, Td, Thead, Th, Link, useColorModeValue } from "@chakra-ui/react";
 
 export default function AggregatedTable() {
   const { aggregated } = useContext(AggregatorContext);
   return (
-    <Table variant="simple">
-      <Thead>
+    <Table>
+      <Thead position="sticky" insetBlockStart="0" bg={useColorModeValue("gray.100", "gray.900")}>
         <Tr>
           <Th>Project</Th>
           <Th>Author</Th>

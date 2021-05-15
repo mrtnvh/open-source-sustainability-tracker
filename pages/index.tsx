@@ -17,7 +17,13 @@ export default function Home() {
       </Head>
       <Flex alignItems="center" justifyContent="center" flexGrow={1} flexDirection="column">
         {aggregated.dependencies.length > 0 ? (
-          <AggregatedTable />
+          <Box
+            maxW="none"
+            borderWidth="1px"
+            borderRadius="lg"
+          >
+            <AggregatedTable />
+          </Box>
         ) : (
           <Box
             maxW="md"
