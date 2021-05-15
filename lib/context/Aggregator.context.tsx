@@ -4,16 +4,22 @@ type AggregatorState = "idle" | "pending";
 
 export const AggregatorContext = createContext({
   aggregator: "",
-  aggregatorState: "idle" as AggregatorState,
   setAggregator: (value: string) => {},
-  setAggregated: (value: any[]) => {},
+  aggregatorState: "idle" as AggregatorState,
   setAggregatorState: (value: AggregatorState) => {},
-  aggregated: [],
+  aggregated: {
+    projectsCount: 0,
+    dependencies: [],
+  },
+  setAggregated: (value: any) => {},
 });
 
 export const AggregatorProvider = ({ children }) => {
   const [aggregator, setAggregator] = useState("");
-  const [aggregated, setAggregated] = useState([]);
+  const [aggregated, setAggregated] = useState({
+    projectsCount: 0,
+    dependencies: [],
+  });
   const [aggregatorState, setAggregatorState] = useState("idle" as AggregatorState);
 
   return (
@@ -21,10 +27,10 @@ export const AggregatorProvider = ({ children }) => {
       value={{
         aggregator,
         setAggregator,
+        aggregatorState,
+        setAggregatorState,
         aggregated,
         setAggregated,
-        aggregatorState,
-        setAggregatorState
       }}
     >
       {children}
