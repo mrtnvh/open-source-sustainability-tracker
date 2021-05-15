@@ -1,5 +1,4 @@
 import pacote from "pacote";
-// import { withSentry } from "@sentry/nextjs";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const fetchDependencyInformation = async (name: string) =>
@@ -9,7 +8,7 @@ const getDependencyInformation = async (name: string) => {
   try {
     if (!name) return { name };
 
-    const { dependencies, devDependencies, funding } = await fetchDependencyInformation(name);
+    const { dependencies, devDependencies, funding, author } = await fetchDependencyInformation(name);
     const indirectDependencies = Object.keys({
       ...dependencies,
       ...devDependencies,
@@ -18,6 +17,7 @@ const getDependencyInformation = async (name: string) => {
     return {
       name,
       funding,
+      author,
       dependencies: indirectDependencies,
     };
   } catch {

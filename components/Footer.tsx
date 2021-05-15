@@ -9,7 +9,11 @@ export default function SmallWithLogoLeft() {
       fontSize="sm"
     >
       <Text flexGrow={1}>
-        © {new Date().getFullYear()} - <Link href="https://mrtnvh.com">mrtnvh</Link> - All rights reserved
+        © {new Date().getFullYear()} -{" "}
+        <Link target="_blank" rel="noopener" href="https://mrtnvh.com">
+          mrtnvh
+        </Link>{" "}
+        - All rights reserved
       </Text>
       <Text>Build on Next.js, Chakra UI. Hosted on Vercel</Text>
     </Flex>

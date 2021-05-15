@@ -6,8 +6,8 @@ const getDependencyInformation = async ({ name, ...dep }: any) => {
     if (!name) return;
     const infoRequestURL = new URL(window.location.origin + "/api/npm");
     infoRequestURL.searchParams.append("name", name);
-    const { funding } = await fetch(infoRequestURL.toString()).then((res) => res.json());
-    return { ...dep, name, funding };
+    const { funding, author } = await fetch(infoRequestURL.toString()).then((res) => res.json());
+    return { ...dep, name, funding, author };
   } catch (error) {
     return { name, ...dep };
   }

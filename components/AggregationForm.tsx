@@ -1,5 +1,5 @@
 import { FormControl, FormLabel, Input, Button, useColorModeValue, Text, Td, Table, Tbody, Tr } from "@chakra-ui/react";
-import { orderBy, slice, unionBy } from "lodash";
+import { defaultsDeep, orderBy, slice, unionBy } from "lodash";
 import React, { useContext, useState } from "react";
 import { fetchProjectsFromUsername } from "../lib/aggregator";
 import { getIndirectDependenciesFromPackageLock } from "../lib/aggregator/depedency/lockfile";
@@ -25,7 +25,6 @@ export default function AggregationForm({ inHeader }: InitialFormProps) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // setAggregator(username);
     setAggregatorState("pending");
 
     const existingAggregated = await get(username);
