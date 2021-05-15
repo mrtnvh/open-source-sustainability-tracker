@@ -2,6 +2,7 @@ import { uniq } from "lodash";
 import pMap from "p-map";
 import PProgress from "p-progress";
 import { ManifestResult } from "pacote";
+import { P_MAP_OPTIONS } from "./constants";
 
 const apiBaseUrl = "https://api.github.com";
 
@@ -34,6 +35,6 @@ export const fetchProjectsFromUsername = PProgress.fn(
       const lockFile: any = await fetch(lockFileUrl).then((res) => res.json());
       progress(index / (urls.length * 2));
       return { pkgFile, lockFile };
-    });
+    }, P_MAP_OPTIONS);
   }
 );

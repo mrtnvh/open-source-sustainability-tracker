@@ -1,8 +1,5 @@
-import { defaultsDeep, orderBy, slice } from "lodash";
 import pMap from "p-map";
 import PProgress from "p-progress";
-import { ManifestResult } from "pacote";
-import { P_MAP_OPTIONS, SLICE_AMOUNT } from "../constants";
 
 const getDependencyInformation = async ({ name, ...dep }: any) => {
   try {
@@ -37,16 +34,24 @@ const dependencyReducer = (acc, [name, { dependencies }]) => {
 
 export const getIndirectDependenciesFromPackageLock = PProgress.fn(
   async (packageLocks: any[], progress: PProgress.ProgressNotifier) => {
-    const indirectDependencyList: string[] = packageLocks
-      .reduce((packageLockAcc, packageLock) => {
-        return [...packageLockAcc, ...Object.entries(packageLock.dependencies).reduce(dependencyReducer, [])];
-      }, [])
-      .reduce(dependencyCountReducer("indirectCount"), []);
+    try {
+      const indirectDependencyList: string[] = packageLocks
+        .reduce((packageLockAcc, packageLock) => {
+          return [...packageLockAcc, ...Object.entries(packageLock.dependencies).reduce(dependencyReducer, [])];
+        }, [])
+        .reduce(dependencyCountReducer("indirectCount"), []);
 
-    return pMap(indirectDependencyList, async (dep, index) => {
-      const info = await getDependencyInformation(dep);
-      progress(index / indirectDependencyList.length);
-      return info;
-    }, P_MAP_OPTIONS);
+      return await pMap(
+        indirectDependencyList,
+        async (dep, index) => {
+          const info = await getDependencyInformation(dep);
+          progress(index / indirectDependencyList.length);
+          return info;
+        },
+        { concurrency: 10 }
+      );
+    } catch (error) {
+      console.error(error);
+    }
   }
 );

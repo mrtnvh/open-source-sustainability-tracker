@@ -25,7 +25,7 @@ export default function Header() {
       <Text
         fontFamily={"heading"}
         color={useColorModeValue("gray.800", "white")}
-        fontWeight={"black"}
+        fontWeight={"bold"}
         flexGrow={1}
       >
         Open Source Sustainability Tracker

@@ -1,5 +1,5 @@
 import { FormControl, FormLabel, Input, Button, useColorModeValue, Text, Td, Table, Tbody, Tr } from "@chakra-ui/react";
-import { slice, unionBy } from "lodash";
+import { orderBy, slice, unionBy } from "lodash";
 import React, { useContext, useState } from "react";
 import { fetchProjectsFromUsername } from "../lib/aggregator";
 import { getIndirectDependenciesFromPackageLock } from "../lib/aggregator/depedency/lockfile";
@@ -46,13 +46,16 @@ export default function AggregationForm({ inHeader }: InitialFormProps) {
     const inDirectDependencies = await handleGetIndirectDependenciesFromPackageLock;
     setIndirectDependenciesCount(inDirectDependencies.length);
 
-    const dependencies = unionBy(
-      directDependenciesFromPackages.map(({ dependencies, ...dep }) => dep),
-      inDirectDependencies,
-      "name"
+    const dependencies = orderBy(
+      unionBy(
+        directDependenciesFromPackages.map(({ dependencies, ...dep }) => dep),
+        inDirectDependencies,
+        "name"
+      ).filter((dep) => dep !== null),
+      ["directCount", "indirectCount"],
+      ["desc", "desc"]
     );
 
-    // setAggregator(username);
     setAggregated({
       projectsCount,
       dependencies,
