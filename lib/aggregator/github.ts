@@ -18,23 +18,29 @@ export const fetchProjectsFromUsername = PProgress.fn(
     }).then((res) => res.json());
 
     const urls = uniq(
-      data.items.map((item: any) => ({
-        pkgFileUrl: item.html_url
-          .replace("https://github.com/", "https://raw.githubusercontent.com/")
-          .replace("/blob/", "/")
-          .replace("package-lock.json", "package.json"),
-        lockFileUrl: item.html_url
-          .replace("https://github.com/", "https://raw.githubusercontent.com/")
-          .replace("/blob/", "/"),
-      }))
+      data.items
+        .filter((item: any) => !item.html_url.endsWith(".package-lock.json"))
+        .map((item: any) => ({
+          pkgFileUrl: item.html_url
+            .replace("https://github.com/", "https://raw.githubusercontent.com/")
+            .replace("/blob/", "/")
+            .replace("package-lock.json", "package.json"),
+          lockFileUrl: item.html_url
+            .replace("https://github.com/", "https://raw.githubusercontent.com/")
+            .replace("/blob/", "/"),
+        }))
       // .filter((url: string) => url.includes("package-lock.json"))
     );
 
-    return pMap(urls, async ({ pkgFileUrl, lockFileUrl }, index: number) => {
-      const pkgFile: ManifestResult = await fetch(pkgFileUrl).then((res) => res.json());
-      const lockFile: any = await fetch(lockFileUrl).then((res) => res.json());
-      progress(index / (urls.length * 2));
-      return { pkgFile, lockFile };
-    }, P_MAP_OPTIONS);
+    return pMap(
+      urls,
+      async ({ pkgFileUrl, lockFileUrl }, index: number) => {
+        const pkgFile: ManifestResult = await fetch(pkgFileUrl).then((res) => res.json());
+        const lockFile: any = await fetch(lockFileUrl).then((res) => res.json());
+        progress(index / (urls.length * 2));
+        return { pkgFile, lockFile };
+      },
+      P_MAP_OPTIONS
+    );
   }
 );
