@@ -37,7 +37,10 @@ export const getIndirectDependenciesFromPackageLock = PProgress.fn(
     try {
       const indirectDependencyList: string[] = packageLocks
         .reduce((packageLockAcc, packageLock) => {
-          return [...packageLockAcc, ...Object.entries(packageLock.dependencies).reduce(dependencyReducer, [])];
+          if (packageLock.dependencies) {
+            return [...packageLockAcc, ...Object.entries(packageLock.dependencies).reduce(dependencyReducer, [])];
+          }
+          return packageLockAcc
         }, [])
         .reduce(dependencyCountReducer("indirectCount"), []);
 
