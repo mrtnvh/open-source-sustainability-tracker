@@ -1,3 +1,9 @@
+import { orderBy, unionBy } from "lodash";
+import { getDirectDependenciesFromPackages } from "./direct";
+import { fetchProjectsFromUsername } from "./github";
+import { getIndirectDependenciesFromPackageLock } from "./indirect";
+import { set, get } from "idb-keyval";
+
 type SetStateType = React.Dispatch<React.SetStateAction<number>>;
 
 interface AggregateOptions {
@@ -18,45 +24,41 @@ export const aggregate = async ({
   setDirectDependenciesCount,
   setIndirectDependenciesProgressState,
   setIndirectDependenciesCount,
-}: AggregateOptions) =>
-  new Promise((resolve, reject) => {
-    const worker = new Worker(new URL("./index.worker.ts", import.meta.url));
-    worker.postMessage(username);
-    worker.onmessage = (event) => {
-      const { value, key, type } = event.data;
-      switch (type) {
-        case "progress":
-          switch (key) {
-            case "setPackagesProgressState":
-              setPackagesProgressState(value);
-              break;
-            case "setDirectDependenciesProgressState":
-              setDirectDependenciesProgressState(value);
-              break;
-            case "setIndirectDependenciesProgressState":
-              setIndirectDependenciesProgressState(value);
-              break;
-          }
-          break;
-        case "count":
-          switch (key) {
-            case "setProjectsCount":
-              setProjectsCount(value);
-              break;
-            case "setDirectDependenciesCount":
-              setDirectDependenciesCount(value);
-              break;
-            case "setIndirectDependenciesCount":
-              setIndirectDependenciesCount(value);
-              break;
-          }
-          break;
-        case "resolved":
-          resolve(value);
-          break;
-        default:
-          reject(value);
-          break;
-      }
-    };
-  });
+}: AggregateOptions) => {
+  const existingAggregated = await get(username);
+  if (existingAggregated) {
+    setProjectsCount(existingAggregated.projectsCount);
+    return existingAggregated.dependencies;
+  } else {
+    const handleFetchPackageLockFilesFromUsername = fetchProjectsFromUsername(username);
+    handleFetchPackageLockFilesFromUsername.onProgress(setPackagesProgressState);
+    const packages = await handleFetchPackageLockFilesFromUsername;
+    setProjectsCount(packages.length);
+
+    const handleGetDirectDependenciesFromPackages = getDirectDependenciesFromPackages(
+      packages.map(({ pkgFile }) => pkgFile)
+    );
+    handleGetDirectDependenciesFromPackages.onProgress(setDirectDependenciesProgressState);
+    const directDependenciesFromPackages = await handleGetDirectDependenciesFromPackages;
+    setDirectDependenciesCount(directDependenciesFromPackages.length);
+
+    const handleGetIndirectDependenciesFromPackageLock = getIndirectDependenciesFromPackageLock(
+      packages.map(({ lockFile }) => lockFile)
+    );
+    handleGetIndirectDependenciesFromPackageLock.onProgress(setIndirectDependenciesProgressState);
+    const inDirectDependencies = await handleGetIndirectDependenciesFromPackageLock;
+    setIndirectDependenciesCount(inDirectDependencies.length);
+
+    const dependencies = orderBy(
+      unionBy(
+        directDependenciesFromPackages.map(({ dependencies, ...dep }) => dep),
+        inDirectDependencies,
+        "name"
+      ).filter((dep) => dep !== null),
+      ["directCount", "indirectCount"],
+      ["desc", "desc"]
+    );
+    await set(username, { projectsCount: packages.length, dependencies });
+    return dependencies;
+  }
+};
