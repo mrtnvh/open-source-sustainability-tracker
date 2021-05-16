@@ -18,7 +18,8 @@ export default function Home() {
       <Flex alignItems="center" justifyContent="center" flexGrow={1} flexDirection="column">
         {aggregated.dependencies.length > 0 ? (
           <Box
-            maxW="100%"
+            flexGrow={1}
+            w="100%"
             borderWidth="1px"
             borderRadius="lg"
           >
