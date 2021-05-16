@@ -1,5 +1,5 @@
 import { orderBy, unionBy } from "lodash";
-import { getDirectDependenciesFromPackages } from "./depedency/package";
+import { getDirectDependenciesFromPackages } from "./direct";
 import { fetchProjectsFromUsername } from "./github";
 import { getIndirectDependenciesFromPackageLock } from "./indirect";
 import { set, get } from "idb-keyval";
