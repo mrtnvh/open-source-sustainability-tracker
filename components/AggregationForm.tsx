@@ -1,9 +1,6 @@
-import { FormControl, FormLabel, Input, Button, useColorModeValue, Text, Td, Table, Tbody, Tr } from "@chakra-ui/react";
-import { defaultsDeep, orderBy, slice, unionBy } from "lodash";
-import React, { useContext, useState } from "react";
-import { fetchProjectsFromUsername } from "../lib/aggregator";
-import { getIndirectDependenciesFromPackageLock } from "../lib/aggregator/depedency/lockfile";
-import { getDirectDependenciesFromPackages } from "../lib/aggregator/depedency/package";
+import { FormControl, FormLabel, Input, Button, useColorModeValue, Td, Table, Tbody, Tr } from "@chakra-ui/react";
+import { FormEvent, useContext, useState } from "react";
+import { aggregate } from "../lib/aggregator";
 import { AggregatorContext } from "../lib/context/Aggregator.context";
 import { UsernameContext } from "../lib/context/Username.context";
 import { set, get } from "idb-keyval";
@@ -14,8 +11,7 @@ interface InitialFormProps {
 
 export default function AggregationForm({ inHeader }: InitialFormProps) {
   const { username, setUsername } = useContext(UsernameContext);
-  const { setAggregator, aggregatorState, setAggregatorState, setAggregated } = useContext(AggregatorContext);
-
+  const { aggregatorState, setAggregatorState, setAggregated } = useContext(AggregatorContext);
   const [projectsCount, setProjectsCount] = useState(0);
   const [packagesProgressState, setPackagesProgressState] = useState(0);
   const [directDependenciesProgressState, setDirectDependenciesProgressState] = useState(0);
@@ -23,52 +19,19 @@ export default function AggregationForm({ inHeader }: InitialFormProps) {
   const [indirectDependenciesProgressState, setIndirectDependenciesProgressState] = useState(0);
   const [indirectDependenciesCount, setIndirectDependenciesCount] = useState(0);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAggregatorState("pending");
-
-    const existingAggregated = await get(username);
-
-    if (existingAggregated) {
-      setAggregated(existingAggregated);
-    } else {
-      const handleFetchPackageLockFilesFromUsername = fetchProjectsFromUsername(username);
-      handleFetchPackageLockFilesFromUsername.onProgress(setPackagesProgressState);
-      const packages = await handleFetchPackageLockFilesFromUsername;
-      setProjectsCount(packages.length);
-
-      const handleGetDirectDependenciesFromPackages = getDirectDependenciesFromPackages(
-        packages.map(({ pkgFile }) => pkgFile)
-      );
-      handleGetDirectDependenciesFromPackages.onProgress(setDirectDependenciesProgressState);
-      const directDependenciesFromPackages = await handleGetDirectDependenciesFromPackages;
-      setDirectDependenciesCount(directDependenciesFromPackages.length);
-
-      const handleGetIndirectDependenciesFromPackageLock = getIndirectDependenciesFromPackageLock(
-        packages.map(({ lockFile }) => lockFile)
-      );
-      handleGetIndirectDependenciesFromPackageLock.onProgress(setIndirectDependenciesProgressState);
-      const inDirectDependencies = await handleGetIndirectDependenciesFromPackageLock;
-      setIndirectDependenciesCount(inDirectDependencies.length);
-
-      const dependencies = orderBy(
-        unionBy(
-          directDependenciesFromPackages.map(({ dependencies, ...dep }) => dep),
-          inDirectDependencies,
-          "name"
-        ).filter((dep) => dep !== null),
-        ["directCount", "indirectCount"],
-        ["desc", "desc"]
-      );
-
-      const aggregated = {
-        projectsCount,
-        dependencies,
-      };
-
-      setAggregated(aggregated);
-      await set(username, aggregated);
-    }
+    const dependencies = await aggregate({
+      username,
+      setPackagesProgressState,
+      setProjectsCount,
+      setDirectDependenciesProgressState,
+      setDirectDependenciesCount,
+      setIndirectDependenciesProgressState,
+      setIndirectDependenciesCount,
+    });
+    setAggregated({ projectsCount, dependencies });
     setAggregatorState("idle");
   };
 
