@@ -2,23 +2,24 @@ import { createContext, useState } from "react";
 
 type AggregatorState = "idle" | "pending";
 
+export const defaultAggregated = {
+  projectsCount: 0,
+  dependencies: [],
+};
+
 export const AggregatorContext = createContext({
   aggregator: "",
   setAggregator: (value: string) => {},
   aggregatorState: "idle" as AggregatorState,
   setAggregatorState: (value: AggregatorState) => {},
-  aggregated: {
-    projectsCount: 0,
-    dependencies: [],
-  },
+  aggregated: { ...defaultAggregated },
   setAggregated: (value: any) => {},
 });
 
 export const AggregatorProvider = ({ children }) => {
   const [aggregator, setAggregator] = useState("");
   const [aggregated, setAggregated] = useState({
-    projectsCount: 0,
-    dependencies: [],
+    ...defaultAggregated,
   });
   const [aggregatorState, setAggregatorState] = useState("idle" as AggregatorState);
 

@@ -1,15 +1,30 @@
-import { FormControl, FormLabel, Input, Button, useColorModeValue, Td, Table, Tbody, Tr } from "@chakra-ui/react";
-import { FormEvent, useContext, useState } from "react";
+import {
+  FormControl,
+  FormLabel,
+  Input,
+  Button,
+  useColorModeValue,
+  Td,
+  Table,
+  Tbody,
+  Tr,
+  visuallyHiddenStyle,
+  useBreakpointValue,
+  FormControlProps,
+  FormLabelProps,
+  InputProps,
+  ButtonProps,
+} from "@chakra-ui/react";
+import { ChangeEvent, FormEvent, useContext, useState } from "react";
 import { aggregate } from "../lib/aggregator";
 import { AggregatorContext } from "../lib/context/Aggregator.context";
 import { UsernameContext } from "../lib/context/Username.context";
-import { set, get } from "idb-keyval";
 
 interface InitialFormProps {
-  inHeader?: boolean;
+  inline?: boolean;
 }
 
-export default function AggregationForm({ inHeader }: InitialFormProps) {
+export default function AggregationForm({ inline }: InitialFormProps) {
   const { username, setUsername } = useContext(UsernameContext);
   const { aggregatorState, setAggregatorState, setAggregated } = useContext(AggregatorContext);
   const [projectsCount, setProjectsCount] = useState(0);
@@ -35,43 +50,51 @@ export default function AggregationForm({ inHeader }: InitialFormProps) {
     setAggregatorState("idle");
   };
 
-  const formControlProps = {
-    ...(inHeader && {
+  const formControlProps: FormControlProps = {
+    ...(inline && {
       display: "flex",
       alignItems: "center",
       gridGap: "3",
       w: "auto",
+      flexDirection: useBreakpointValue({ base: "column", md: "row" }),
     }),
   };
 
-  const formLabelProps = {
-    ...(inHeader && {
+  const formLabelProps: FormLabelProps = {
+    htmlFor: "ghUsername",
+    whiteSpace: "nowrap",
+    ...(inline && {
+      style: visuallyHiddenStyle,
       margin: 0,
     }),
   };
 
-  const formInputProps = {
-    ...(inHeader
-      ? {
-          maxW: 300,
-        }
-      : {
-          mb: "4",
-          bg: useColorModeValue("white", "black"),
-        }),
+  const formInputProps: InputProps = {
+    id: "ghUsername",
+    type: "text",
+    onChange: (e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value),
+    value: username,
+    placeholder: "Your GitHub username",
+    bg: useColorModeValue("white", "black"),
+    ...(!inline && {
+      mb: "4",
+    }),
+  };
+
+  const buttonProps: ButtonProps = {
+    type: "submit",
+    colorScheme: "blue",
+    minW: "auto",
+    w: useBreakpointValue({ base: "full", md: "auto" }),
   };
 
   if (aggregatorState === "idle") {
     return (
       <form onSubmit={(e) => handleSubmit(e)}>
         <FormControl {...formControlProps} id="ghUsername">
-          <FormLabel whiteSpace="nowrap" {...formLabelProps}>
-            Your GitHub username
-          </FormLabel>
-          <Input {...formInputProps} type="text" onChange={(e) => setUsername(e.target.value)} value={username} />
-          <Button type="submit" colorScheme="blue">
-            {inHeader ? "Go" : "Aggregate dependencies"}
-          </Button>
+          <FormLabel {...formLabelProps}>Your GitHub username</FormLabel>
+          <Input {...formInputProps} />
+          <Button {...buttonProps}>Aggregate dependencies</Button>
         </FormControl>
       </form>
     );
