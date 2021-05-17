@@ -10,6 +10,13 @@ const config = {
     dest: "public",
     runtimeCaching,
   },
+  webpack: (config, { isServer, dev }) => {
+    config.output.chunkFilename = isServer
+      ? `${dev ? "[name]" : "[name].[fullhash]"}.js`
+      : `static/chunks/${dev ? "[name]" : "[name].[fullhash]"}.js`;
+
+    return config;
+  },
 };
 
 module.exports = withPWA(config);
