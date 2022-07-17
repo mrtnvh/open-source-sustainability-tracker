@@ -1,0 +1,23 @@
+model Package {
+  id           String         @id @default(uuid())
+  name         String         @unique
+  funding      String
+  author       Json
+  edgesIn      PackageEdges[] @relation("fromEdge")
+  edgesOut     PackageEdges[] @relation("toEdge")
+}
+
+enum PackageEdgeType {
+  IN
+  OUT
+}
+
+model PackageEdges {
+  id String @id @default(uuid())
+
+  from   Package @relation(name: "fromEdge", fields: [fromId], references: [id], onUpdate: NoAction)
+  fromId String
+
+  to   Package @relation(name: "toEdge", fields: [toId], references: [id], onUpdate: NoAction)
+  toId String
+}

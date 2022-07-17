@@ -17,13 +17,15 @@
     "idb-keyval": "^6.2.0",
     "lodash": "^4.17.21",
     "next": "^12.2.2",
+    "next-auth": "^4.10.0",
     "next-offline": "^5.0.5",
     "next-pwa": "^5.5.4",
     "p-map": "^4.0.0",
     "p-progress": "^0.5.1",
     "pacote": "^13.6.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.4.0"
   },
   "devDependencies": {
     "@types/node": "^15.3.0",
